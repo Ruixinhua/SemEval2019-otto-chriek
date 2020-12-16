@@ -4,7 +4,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from sklearn.model_selection import StratifiedKFold
 from torch.utils.data.dataloader import DataLoader
 
-from data_loader import get_data_word2vec
+from utils.data_loader import get_data_word2vec
 from dataset.bias_news import BiasNews
 from hparams import HParams
 from models.title_body_head_att import TitleBodyHeadAtt
