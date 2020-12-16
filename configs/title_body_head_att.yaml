@@ -1,0 +1,8 @@
+word_emb_dim: 300
+article_size: 50
+title_size: 20
+head_num: 20
+dropout: 0.2
+attention_hidden_dim: 200
+word_emb_file: "utils/embedding.npy"
+model_name: "title_body_attention"

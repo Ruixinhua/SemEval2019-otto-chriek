@@ -53,16 +53,14 @@ def convert(label):
     return 1 if label == "true" else 0
 
 
-def get_data_word2vec(article_size=50, sentence_size=20):
+def get_data_word2vec(article_size=50, sentence_size=20, data_dir="data/", word_dic_dir="utils/"):
     # set path for data
-    data_path = '../data/'
-
-    text_file = data_path + 'articles-training-byarticle.xml'
-    label_file = data_path + "ground-truth-training-byarticle.xml"
+    text_file = data_dir + 'articles-training-byarticle.xml'
+    label_file = data_dir + "ground-truth-training-byarticle.xml"
 
     # read in data and glove vectors
     content_dic = read_files(text_file, label_file)
-    word_dic = pickle.load(open("word_dict.pkl", "rb"))
+    word_dic = pickle.load(open(f"{word_dic_dir}word_dict.pkl", "rb"))
 
     y_data = np.array([convert(label) for label in content_dic["label"]], dtype=np.long)
 
