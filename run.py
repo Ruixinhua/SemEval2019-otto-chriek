@@ -5,7 +5,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from sklearn.model_selection import StratifiedKFold
 from torch.utils.data.dataloader import DataLoader
 
-from utils.data_loader import get_data_word2vec
+from utils.data_loader import get_training_data
 from dataset.bias_news import BiasNews
 from hparams import HParams
 from models.title_body_head_att import TitleBodyHeadAtt
@@ -16,7 +16,8 @@ if __name__ == "__main__":
     hparams = HParams(**config)
     model_name = config["model_name"]
     tb_logger = pl_loggers.TensorBoardLogger(f"logs/{model_name}/{config['head_num']}")
-    x_data, y_data = get_data_word2vec(config["article_size"], config["title_size"])
+    x_data, y_data = get_training_data(config["article_size"], config["title_size"])
+    pl.seed_everything(42)
     kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
     accuracy = []
     for i, (train, test) in enumerate(kfold.split(x_data, y_data)):
@@ -34,9 +35,10 @@ if __name__ == "__main__":
         )
         # most basic trainer, uses good defaults (auto-tensorboard, checkpoints, logs, and more)
         trainer = pl.Trainer(gpus=1, min_epochs=20, max_epochs=30, check_val_every_n_epoch=1, logger=tb_logger,
-                             callbacks=[checkpoint_callback])
+                             callbacks=[checkpoint_callback], deterministic=True)
         trainer.fit(model, train_loader, test_loader)
         model = TitleBodyHeadAtt.load_from_checkpoint(checkpoint_callback.best_model_path, hparam=hparams)
+        model.freeze()
         acc = trainer.test(model=model, test_dataloaders=test_loader)
         accuracy.append(acc[0]["test_acc"])
     print(f"Average test accuracy of {model_name}: {sum(accuracy) / len(accuracy)}")

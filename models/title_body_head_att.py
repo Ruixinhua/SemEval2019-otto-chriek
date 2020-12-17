@@ -80,6 +80,11 @@ class TitleBodyHeadAtt(pl.LightningModule):
         self.log('train_loss', loss)
         return loss
 
+    def inference(self, batch):
+        prob = torch.softmax(self(batch), dim=1)
+        predicted = torch.argmax(prob, 1)
+        return prob, predicted
+
     def validation_step(self, batch, batch_idx):
         sequences, y = batch
         labels_hat = torch.argmax(self(sequences), dim=1)

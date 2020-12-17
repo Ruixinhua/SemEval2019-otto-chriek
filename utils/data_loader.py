@@ -4,23 +4,28 @@ from utils.utils import *
 from lxml.etree import iterparse
 
 
-def read_files(text_file, label_file):
-    content = {"article": [], "title": [], "label": []}
+def read_label(label_file):
+    labels = []
     with open(label_file) as labelFile:
-        xml.sax.parse(labelFile, GroundTruthHandler(content["label"]))
+        xml.sax.parse(labelFile, GroundTruthHandler(labels))
+    return labels
 
+
+def read_text(text_file):
+    content = {"article": [], "title": [], "label": [], "id": []}
     for event, elem in iterparse(text_file):
         if elem.tag == "article":
-            title = elem.attrib['title']
+            title = elem.attrib["title"]
+            article_id = elem.attrib["id"]
             text = "".join(elem.itertext())
             title = cleanQuotations(title)
             text = cleanQuotations(text)
             text = cleanText(fixup(text))
-            text = ' '.join(text.split())
+            text = " ".join(text.split())
             content["title"].append(title)
             content["article"].append(sent_tokenize(text))
+            content["id"].append(article_id)
             elem.clear()
-
     return content
 
 
@@ -53,17 +58,9 @@ def convert(label):
     return 1 if label == "true" else 0
 
 
-def get_data_word2vec(article_size=50, sentence_size=20, data_dir="data/", word_dic_dir="utils/"):
-    # set path for data
-    text_file = data_dir + 'articles-training-byarticle.xml'
-    label_file = data_dir + "ground-truth-training-byarticle.xml"
-
-    # read in data and glove vectors
-    content_dic = read_files(text_file, label_file)
+def convert_text_data(text_file, article_size=50, sentence_size=20, word_dic_dir="utils/"):
     word_dic = pickle.load(open(f"{word_dic_dir}word_dict.pkl", "rb"))
-
-    y_data = np.array([convert(label) for label in content_dic["label"]], dtype=np.long)
-
+    content_dic = read_text(text_file)
     # load dataset
     articles = np.zeros((len(content_dic["article"]), article_size, sentence_size))
     for article_id, article in enumerate(content_dic["article"]):
@@ -74,5 +71,17 @@ def get_data_word2vec(article_size=50, sentence_size=20, data_dir="data/", word_
     articles = articles.reshape((-1, article_size * sentence_size))
 
     x_data = np.concatenate((titles, articles), axis=1)
+    return x_data, content_dic["id"]
+
+
+def get_training_data(article_size=50, sentence_size=20, data_dir="data/"):
+    # set path for data
+    text_file = data_dir + "articles-training-byarticle.xml"
+    label_file = data_dir + "ground-truth-training-byarticle.xml"
+
+    # read in data
+    y_data = np.array([convert(label) for label in read_label(label_file)], dtype=np.long)
+    x_data, _ = convert_text_data(text_file, article_size=article_size, sentence_size=sentence_size)
+
     return x_data, y_data
 
