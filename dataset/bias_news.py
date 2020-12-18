@@ -1,7 +1,6 @@
 import torch
 
 from torch.utils.data import Dataset
-from torchvision.transforms import transforms
 
 
 class BiasNews(Dataset):
@@ -10,7 +9,6 @@ class BiasNews(Dataset):
         # TODO
         self.sequences = sequences
         self.labels = labels
-        self.transform = transforms.ToTensor()
 
     def __getitem__(self, index):
         sequence = torch.tensor(self.sequences[index], dtype=torch.long)

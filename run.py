@@ -15,7 +15,7 @@ if __name__ == "__main__":
     config = yaml.full_load(open(yaml_file))
     hparams = HParams(**config)
     model_name = config["model_name"]
-    tb_logger = pl_loggers.TensorBoardLogger(f"logs/{model_name}/{config['head_num']}")
+
     x_data, y_data = get_training_data(config["article_size"], config["title_size"])
     pl.seed_everything(42)
     kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
@@ -33,6 +33,7 @@ if __name__ == "__main__":
             save_top_k=1,
             mode="max",
         )
+        tb_logger = pl_loggers.TensorBoardLogger(f"logs/{model_name}/{config['head_num']}/{i}")
         # most basic trainer, uses good defaults (auto-tensorboard, checkpoints, logs, and more)
         trainer = pl.Trainer(gpus=1, min_epochs=20, max_epochs=30, check_val_every_n_epoch=1, logger=tb_logger,
                              callbacks=[checkpoint_callback], deterministic=True)
