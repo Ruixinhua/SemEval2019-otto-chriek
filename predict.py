@@ -18,10 +18,11 @@ if __name__ == "__main__":
     hparams = HParams(**config)
     model_name = config["model_name"]
     model_path = "checkpoint/test_model.ckpt"
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     x_data, article_ids = convert_text_data(args.A, config["article_size"], config["title_size"])
 
-    x_data = torch.tensor(x_data, dtype=torch.long).to(torch.device("cuda"))
-    model = TitleBodyHeadAtt.load_from_checkpoint(model_path, hparam=hparams).to(torch.device("cuda"))
+    x_data = torch.tensor(x_data, dtype=torch.long).to(device)
+    model = TitleBodyHeadAtt.load_from_checkpoint(model_path, hparam=hparams).to(device)
     model.freeze()
 
     probs, predicted = model.inference(x_data)
