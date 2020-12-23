@@ -12,7 +12,7 @@ def read_label(label_file):
 
 
 def read_text(text_file):
-    content = {"article": [], "title": [], "label": [], "id": []}
+    content = {"article": [], "title": [], "id": []}
     for event, elem in iterparse(text_file):
         if elem.tag == "article":
             title = elem.attrib["title"]
@@ -58,9 +58,8 @@ def convert(label):
     return 1 if label == "true" else 0
 
 
-def convert_text_data(text_file, article_size=50, sentence_size=20, word_dic_dir="utils/"):
+def convert_text_data(content_dic, article_size=50, sentence_size=20, word_dic_dir="utils/"):
     word_dic = pickle.load(open(f"{word_dic_dir}word_dict.pkl", "rb"))
-    content_dic = read_text(text_file)
     # load dataset
     articles = np.zeros((len(content_dic["article"]), article_size, sentence_size))
     for article_id, article in enumerate(content_dic["article"]):
