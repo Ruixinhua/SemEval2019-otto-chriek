@@ -36,5 +36,6 @@ if __name__ == "__main__":
     probs, predicted = model.inference(x_data)
     with open(args.O, "w") as w:
         for i, prob, pred in zip(article_ids, probs, predicted):
+            prob = prob[pred]
             pred = "true" if pred else "false"
-            w.write(f"{i} {pred} {prob[pred]} \n")
+            w.write(f"{i} {pred} {prob} \n")
